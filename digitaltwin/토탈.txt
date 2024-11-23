@@ -1,0 +1,356 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO.Ports;
+using System;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System.Security.Cryptography;
+
+public class total_control : MonoBehaviour
+{
+    public GameObject robot1;
+    public GameObject robot2;
+    private bool isReceiving = true;
+    bool task_state = false;
+    int task_num = 0;
+    int task_cnt = 0;
+    bool robot_enabled1 = true;
+    bool robot_enabled2 = true;
+    bool robot_enable1_block = false;
+    bool robot_enable2_block = false;
+    DateTime t = DateTime.Now;
+    DateTime main_t = DateTime.Now;
+    List<string> gcode1 = new List<string>()
+    {
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z-35 F30\r\n",
+        "M3\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z-35 F30\r\n",
+        "M5\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z-35 F30\r\n",
+        "M3\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z-35 F30\r\n",
+        "M5\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X0 Y19.5 Z134 F30\r\n"
+    };
+    List<string> gcode2 = new List<string>()
+    {
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z-55 F30\r\n",
+        "M3\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z-55 F30\r\n",
+        "M5\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X0 Y125 Z-55 F30\r\n",
+        "M3\r\n",
+        "G1 X0 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X-65 Y125 Z-55 F30\r\n",
+        "M5\r\n",
+        "G1 X-65 Y125 Z0 F30\r\n",
+        "G1 X0 Y19.5 Z134 F30\r\n"
+    };
+
+    private UdpClient yolo; //yolo
+    string yolo_data = "";
+    bool yolo_request = false;
+    bool yolo_complete = false;
+
+    private void ReceiveCallback2(IAsyncResult ar)
+    {
+
+        IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 5005);
+        byte[] receivedBytes = yolo.EndReceive(ar, ref remoteEP);
+        string receivedData = Encoding.UTF8.GetString(receivedBytes);
+        print("yolo data = " +receivedData);
+  
+        yolo_complete = true;
+        yolo.BeginReceive(ReceiveCallback2, null);
+
+    }
+
+    void Start()
+    {
+        yolo = new UdpClient(5005);
+        yolo.BeginReceive(ReceiveCallback2, null);
+        /*
+        print("접속시작");
+        tc.Connect("192.168.0.101", 8000);
+        ns = tc.GetStream();
+
+        if (tc.Connected)
+        {
+            print("로봇1접속완료");
+            byte[] buffer = new byte[1024]; // 예를 들어 1024 바이트로 버퍼 설정
+            while (ns.DataAvailable)
+            {
+                int bytesRead = ns.Read(buffer, 0, buffer.Length);
+                // 읽은 데이터를 처리하거나 무시하여 버퍼 비우기
+            }
+        }
+        else
+        {
+            print("로봇1접속실패");
+        }
+
+        byte[] text = Encoding.UTF8.GetBytes("G92\r\n");
+        ns.Write(text, 0, text.Length);
+        */
+        /*
+        tc2.Connect("192.168.0.102", 8000);
+        ns2 = tc2.GetStream();
+        ns2.Write(text, 0, text.Length);
+
+        if (tc2.Connected)
+        {
+            print("로봇2접속완료");
+            byte[] buffer = new byte[1024]; // 예를 들어 1024 바이트로 버퍼 설정
+            while (ns2.DataAvailable)
+            {
+                int bytesRead = ns2.Read(buffer, 0, buffer.Length);
+                // 읽은 데이터를 처리하거나 무시하여 버퍼 비우기
+            }
+        }
+        else
+        {
+            print("로봇2접속실패");
+        }
+        */
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            task_num = 0;
+            task_cnt = 0;
+            task_state = true;
+            robot_enabled1 = true;
+            robot_enabled2 = true;
+            //byte[] text = Encoding.UTF8.GetBytes("G1 X0 Y100 Z100\r\n");
+            //ns.Write(text, 0, text.Length);
+            print("테스트시작");
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("G1 X0 Y19.5 Z134\r\n");
+            robot1.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+
+            robot2.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+
+            print("호밍");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Keypad0))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("G1 X-65 Y125 Z0 F30\r\n");
+            robot1.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("G1 X0 Y19.5 Z134 F30\r\n");
+            robot1.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad2))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("G1 X-65 Y125 Z0 F30\r\n");
+            robot2.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("G1 X0 Y19.5 Z134 F30\r\n");
+            robot2.GetComponent<robot_control3>().ns.Write(text, 0, text.Length);
+        }
+
+        if ((DateTime.Now - t).TotalMilliseconds > 100)
+        {
+            t = DateTime.Now;
+
+            if (task_state)
+            {
+                if (task_num == 0)
+                {
+                    //로봇1
+                    //순서대로 gcode 전송
+                    if (robot_enabled1)
+                    {
+                        //robot_enabled1 = false;
+                        print(gcode1[task_cnt]);
+                        //sp1.Write(gcode1[task_cnt]);
+                        //byte[] text = Encoding.UTF8.GetBytes(gcode1[task_cnt]);
+                        //robot1.GetComponent<robot_control>().ns.Write(text, 0, text.Length);
+                        robot1.GetComponent<robot_control3>().send_data(gcode1[task_cnt]);
+                        task_cnt++;
+                        //다햇으면 종료
+                        if (task_cnt == gcode1.Count)
+                        {
+                            //print("로봇1종료");
+                            print("로봇1 g코드 전송종료");
+                            task_cnt = 0;
+                            task_num = 1;
+                            robot_enabled1 = false;
+                        }
+                    }
+
+                }
+                else if (task_num == 1)
+                {
+                    if (robot_enabled1)
+                    {
+                        task_cnt = 0;
+                        task_num = 2;
+                    }
+                }
+                else if(task_num == 2){
+                    if (yolo_request == false)
+                    {
+                        print("send yolo");
+                        byte[] data = Encoding.UTF8.GetBytes("1");
+                        yolo.Send(data, data.Length, "192.168.0.104", 5006);
+                        yolo_request = true;
+                    }
+
+                    if (yolo_complete)
+                    {
+                        print("Yolo complete");
+                        yolo_complete = false;
+                        yolo_request = false;
+                        task_cnt = 0;
+                        task_num = 3;
+                    }
+
+                }
+                else if (task_num == 3)
+                {
+                    if (robot_enabled2)
+                    {
+                        //robot_enabled2 = false;
+                        print(gcode2[task_cnt]);
+                        //byte[] text = Encoding.UTF8.GetBytes(gcode2[task_cnt]);
+                        //robot2.GetComponent<robot_control>().ns.Write(text, 0, text.Length);
+                        robot2.GetComponent<robot_control3>().send_data(gcode2[task_cnt]);
+                        task_cnt++;
+
+                        //다햇으면 종료
+                        if (task_cnt == gcode2.Count)
+                        {
+                            task_cnt = 0;
+                            task_num = 4;
+                            //task_state = false;
+                            print("로봇2 g코드 전송종료");
+                            robot_enabled2 = false;
+                        }
+                    }
+
+                }else if(task_num == 4)
+                {
+                    if (robot_enabled2)
+                    {
+                        task_cnt = 0;
+                        task_num = 0;
+                        task_state = false;
+                    }
+                }
+
+
+            }
+        }
+
+        if (robot1.GetComponent<robot_control3>().tc.Connected)
+        {
+            if (robot1.GetComponent<robot_control3>().ns.DataAvailable)
+            {
+                byte[] buffer = new byte[1024];
+                int len = robot1.GetComponent<robot_control3>().ns.Read(buffer, 0, buffer.Length);
+                string robot_data = Encoding.UTF8.GetString(buffer);
+
+                if (robot_data.IndexOf("OK") != -1)
+                {
+                    robot_enabled1 = true;
+                    print("로봇1 작업종료 명령수신");
+                }
+                else
+                {
+
+                    string[] data2 = robot_data.Split(',');
+                    if (data2.Length == 5)
+                    {
+                        float rot_degree = float.Parse(data2[0]);
+                        float low_degree = float.Parse(data2[1]);
+                        float high_degree = float.Parse(data2[2]);
+                        int enabled = int.Parse(data2[3]);
+                        int gripper_state = int.Parse(data2[4]);
+                        //if (enabled == 1)
+                        //{
+                        //    robot_enabled1 = true;
+                        //}
+                        robot1.GetComponent<robot_control3>().rot.GetComponent<body_control>().set_degree(rot_degree);
+                        robot1.GetComponent<robot_control3>().rot_small.GetComponent<body_control>().set_degree(rot_degree * 21 / 9);
+                        robot1.GetComponent<robot_control3>().low.GetComponent<body_control>().set_degree(low_degree);
+                        robot1.GetComponent<robot_control3>().high.GetComponent<body_control>().set_degree(-high_degree);
+                        //string output = "robot1=";
+                        //for(int i = 0;i < data2.Length;i++)
+                        //{
+                        //    output += data2[i] + "/ ";
+                        //}
+                        //print(output);  
+                    }
+                }
+            }
+        }
+
+        if (robot2.GetComponent<robot_control3>().tc.Connected)
+        {
+            if (robot2.GetComponent<robot_control3>().ns.DataAvailable)
+            {
+                byte[] buffer = new byte[1024];
+                int len = robot2.GetComponent<robot_control3>().ns.Read(buffer, 0, buffer.Length);
+                string robot_data = Encoding.UTF8.GetString(buffer);
+
+                if (robot_data.IndexOf("OK") != -1)
+                {
+                    robot_enabled2 = true;
+                    print("로봇2 작업종료 명령수신");
+                }
+                else
+                {
+                    string[] data2 = robot_data.Split(',');
+                    if (data2.Length == 5)
+                    {
+                        float rot_degree = float.Parse(data2[0]);
+                        float low_degree = float.Parse(data2[1]);
+                        float high_degree = float.Parse(data2[2]);
+                        int enabled = int.Parse(data2[3]);
+                        int gripper_state = int.Parse(data2[4]);
+                        //if (enabled == 1)
+                        //{
+                        //    robot_enabled1 = true;
+                        //}
+                        robot2.GetComponent<robot_control3>().rot.GetComponent<body_control>().set_degree(rot_degree);
+                        robot2.GetComponent<robot_control3>().rot_small.GetComponent<body_control>().set_degree(rot_degree * 21 / 9);
+                        robot2.GetComponent<robot_control3>().low.GetComponent<body_control>().set_degree(low_degree);
+                        robot2.GetComponent<robot_control3>().high.GetComponent<body_control>().set_degree(-high_degree);
+                        //string output = "robot1=";
+                        //for(int i = 0;i < data2.Length;i++)
+                        //{
+                        //    output += data2[i] + "/ ";
+                        //}
+                        //print(output);  
+                    }
+                }
+            }
+
+        }
+    }
+}
+    

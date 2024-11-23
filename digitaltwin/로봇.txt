@@ -1,0 +1,73 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using System.IO.Ports;
+using System;
+using static System.Collections.Specialized.BitVector32;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Net;
+
+public class robot_control3 : MonoBehaviour
+{
+    public TMP_Text mytext;
+    public Button pos1;
+    public Button pos2;
+    public Button pos3;
+    public GameObject rot;
+    public GameObject rot_small;
+    public GameObject high;
+    public GameObject high_arm;
+    public GameObject low;
+    public GameObject gripper;
+    public TMP_InputField port;
+    public Button conn;
+    public Button run;
+    public Button stop;
+    public Button btn_on;
+    public Button btn_off;
+    public Button btn_product;
+    public GameObject product;
+    public TcpClient tc = new TcpClient();
+    public NetworkStream ns;
+    public string ip;
+    public string robot_name;
+
+    void Start()
+    {
+        tc.Connect(ip, 8000);
+        ns = tc.GetStream();
+        if (tc.Connected)
+        {
+            print(robot_name+"접속완료");
+            byte[] buffer = new byte[1024]; // 예를 들어 1024 바이트로 버퍼 설정
+            while (ns.DataAvailable)
+            {
+                int bytesRead = ns.Read(buffer, 0, buffer.Length);
+                // 읽은 데이터를 처리하거나 무시하여 버퍼 비우기
+            }
+
+            byte[] text = Encoding.UTF8.GetBytes("G92\r\n");
+            ns.Write(text, 0, text.Length);
+        }
+        else
+        {
+            print(robot_name+"접속실패");
+        }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void send_data(string data)
+    {
+        byte[] text = Encoding.UTF8.GetBytes(data);
+        ns.Write(text, 0, text.Length);
+    }
+}
