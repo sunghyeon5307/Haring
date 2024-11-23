@@ -10,8 +10,8 @@ cap = cv2.VideoCapture(0)
 UDP_IP = "10.150.150.144"
 UDP_PORT_SEND = 5005
 UDP_PORT_RECEIVE = 5006
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # 소켓설정
-sock.bind(('', UDP_PORT_RECEIVE)) # 상대 포트랑 연결(바인딩)
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+sock.bind(('', UDP_PORT_RECEIVE)) 
 
 capthreframe = None
 capture = False

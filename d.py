@@ -5,10 +5,10 @@ import random
 canvas = np.ones((600, 800, 3), dtype=np.uint8) * 255  
 drawing = False 
 start_x, start_y = -1, -1 
-count = 0  # 전역 변수로 count 정의
+count = 0  
 
 def draw_circle(event, x, y, flags, param):
-    global start_x, start_y, drawing, canvas, count  # count를 전역 변수로 사용
+    global start_x, start_y, drawing, canvas, count  
     if event == cv2.EVENT_LBUTTONDOWN:
         drawing = True
         start_x, start_y = x, y  
@@ -40,7 +40,7 @@ while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord("e"):
         canvas = np.ones((600, 800, 3), dtype=np.uint8) * 255  
-        count = 0  # 캔버스를 초기화하면 count도 초기화
+        count = 0  
         cv2.imshow('Canvas', canvas)
     if key == 27: 
         break
