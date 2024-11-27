@@ -1,8 +1,8 @@
 from ultralytics import YOLO
 
-model = YOLO('best4.pt')
+model = YOLO('best5.pt')
 
-metrics = model.val(data='/Users/bagseonghyeon/Desktop/haring/AI/dataset/data.yaml')  
+metrics = model.val(data='/Users/bagseonghyeon/Desktop/haring/AI/yolo/data.yaml')  
 
 # print(metrics)
 
